@@ -84,12 +84,8 @@
       },
       //打开筛选
       show() {
-        this.component_loadingShow = true;
         this.component = "s-filter";
         this.popup_show = true;
-        setTimeout(() => {
-          this.component_loadingShow = false;
-        }, 1000);
       },
       //弹出的子组件filter调用的父组件index的方法
       submitLoad() {
@@ -103,6 +99,12 @@
         }
         this.FridgesMenu.selected = id;
       },
+      //数据加载失败后的一些操作
+      axio_err(warn) {
+        this.FridgesMenu = "";
+        this.loadingRemove(); //  使用main中的全局方法关闭loading
+        this.confirm("提示", warn, "刷新试试", this.reload); //使用main中的全局方法调用弹窗
+      },
       //加载leftMenu数据
       getIndexMenuData() {
         let _this = this;
@@ -111,14 +113,10 @@
             _this.FridgesMenu = res.data;
             _this.getIndexListData(_this.FridgesMenu.selected);
           } else {
-            _this.FridgesMenu = "";
-            _this.loadingRemove(); //  使用main中的全局方法关闭loading
-            _this.confirm("提示", "菜单加载出错，请尝试刷新或者联系管理员！", "刷新试试", _this.reload); //使用main中的全局方法调用弹窗
+            _this.axio_err("菜单加载出错，请尝试刷新或者联系管理员！");
           }
         }).catch(function (error) {
-          _this.FridgesMenu = "";
-          _this.loadingRemove(); //  使用main中的全局方法关闭loading
-          _this.confirm("提示", error.message, "刷新试试", _this.reload); //使用main中的全局方法调用弹窗
+          _this.axio_err(error.message);
         });
       },
       //右侧list数据
@@ -129,10 +127,12 @@
           if (res.data) {
             _this.FridgesIndexData = res.data;
           } else {
+            _this.FridgesIndexData = {};
             _this.confirm("提示", "数据加载出错，请尝试刷新或者联系管理员！", "刷新试试", _this.reload); //使用main中的全局方法调用弹窗
           }
           _this.loadingShow = false;
         }).catch(function (error) {
+          _this.FridgesIndexData = {};
           _this.confirm("提示", error.message, "刷新试试", _this.reload); //使用main中的全局方法调用弹窗
           _this.loadingShow = false;
         });
@@ -150,10 +150,6 @@
 <style scoped rel="stylesheet/less" lang="less">
   img {
     width: 100%;
-  }
-
-  [v-cloak] {
-    display: none;
   }
 </style>
 <style>
